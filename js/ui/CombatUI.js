@@ -3,16 +3,19 @@ import { SkillsMenu } from './SkillsMenu.js';
 const CIRCUMFERENCE = 2 * Math.PI * 40; // r=40 matches SVG
 
 export class CombatUI {
-  constructor(combatSystem, statsSystem, entityManager, player) {
+  constructor(combatSystem, statsSystem, entityManager, player, inventorySystem) {
     this.combat = combatSystem;
     this.stats = statsSystem;
     this.entityManager = entityManager;
     this.player = player;
+    this.inventory = inventorySystem;
 
     this.overlay = document.getElementById('combat-overlay');
     this.skillsMenu = document.getElementById('skills-menu');
     this.itemsMenu = document.getElementById('items-menu');
+    this.itemsList = document.getElementById('items-list');
     this.logEl = document.getElementById('combat-log');
+    this.statusEl = document.getElementById('status-effects');
 
     this.enemyHPFill = document.getElementById('enemy-hp-fill');
     this.enemyHPText = document.getElementById('enemy-hp-text');
@@ -32,6 +35,7 @@ export class CombatUI {
     combatSystem.onFPUpdate = (cur, max) => this._updateFP(cur, max);
     combatSystem.onHPUpdate = (pHP, pMax, eHP, eMax) => this._updateHP(pHP, pMax, eHP, eMax);
     combatSystem.onCombatEnd = (won, fled) => this._onCombatEnd(won, fled);
+    combatSystem.onStatusUpdate = (effects) => this._updateStatus(effects);
   }
 
   show(enemy) {
@@ -42,6 +46,7 @@ export class CombatUI {
       enemy.maxHP, enemy.maxHP
     );
     this._updateFP(0, this.stats.maxFP);
+    this._updateStatus([]);
     this.overlay.hidden = false;
     this.skillsMenu.hidden = true;
     this.itemsMenu.hidden = true;
@@ -53,14 +58,13 @@ export class CombatUI {
 
   // ── Button handlers ────────────────────────────────────────────────────────
   onFight() {
-    if (this.skillsMenu.hidden === false) return;
+    if (!this.skillsMenu.hidden || !this.itemsMenu.hidden) return;
     this.combat.fight();
   }
 
   onSkills() {
     this.skillsMenu.hidden = false;
     this.itemsMenu.hidden = true;
-    // Update skill availability immediately
     this.skillsMenuObj.update(this.stats.currentFP);
   }
 
@@ -71,6 +75,7 @@ export class CombatUI {
   onItems() {
     this.itemsMenu.hidden = false;
     this.skillsMenu.hidden = true;
+    this._buildItemsList();
   }
 
   closeItems() {
@@ -78,7 +83,44 @@ export class CombatUI {
   }
 
   onRun() {
+    if (!this.skillsMenu.hidden || !this.itemsMenu.hidden) return;
     this.combat.tryRun();
+  }
+
+  // ── Items list ─────────────────────────────────────────────────────────────
+  _buildItemsList() {
+    this.itemsList.innerHTML = '';
+    const items = this.inventory.getConsumableList();
+    if (items.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'no-items';
+      empty.textContent = 'No items.';
+      this.itemsList.appendChild(empty);
+      return;
+    }
+    for (const item of items) {
+      const btn = document.createElement('button');
+      btn.className = 'action-btn item-btn';
+      btn.innerHTML = `<span class="item-name">${item.label}</span><span class="item-qty">x${item.count}</span>`;
+      btn.onclick = () => {
+        this.combat.useItem(item.key);
+        this._buildItemsList(); // refresh
+      };
+      this.itemsList.appendChild(btn);
+    }
+  }
+
+  // ── Status effects display ─────────────────────────────────────────────────
+  _updateStatus(effects) {
+    if (!this.statusEl) return;
+    this.statusEl.innerHTML = '';
+    for (const eff of effects) {
+      const badge = document.createElement('span');
+      badge.className = `status-badge status-${eff.type}`;
+      badge.textContent = eff.type.toUpperCase();
+      badge.title = `${eff.remainingTicks} ticks remaining`;
+      this.statusEl.appendChild(badge);
+    }
   }
 
   // ── Internal update methods ────────────────────────────────────────────────
@@ -93,10 +135,8 @@ export class CombatUI {
 
   _updateFP(cur, max) {
     const ratio = Math.min(1, cur / max);
-    // stroke-dashoffset = circumference * (1 - ratio)
     this.fpRingFill.style.strokeDashoffset = CIRCUMFERENCE * (1 - ratio);
     this.fpText.textContent = `${Math.floor(cur)} FP`;
-    // Update skill buttons if menu is open
     if (!this.skillsMenu.hidden) {
       this.skillsMenuObj.update(cur);
     }
@@ -107,7 +147,6 @@ export class CombatUI {
     line.className = 'log-line';
     line.textContent = msg;
     this.logEl.appendChild(line);
-    // Keep only last 4 lines
     while (this.logEl.children.length > 4) {
       this.logEl.removeChild(this.logEl.firstChild);
     }
@@ -123,7 +162,6 @@ export class CombatUI {
       this.hide();
       this.player.isInCombat = false;
       this.entityManager.combatEnded();
-      // If player was defeated, teleport home
       if (!won && !fled) {
         this.player.teleportTo(0, 0);
       }

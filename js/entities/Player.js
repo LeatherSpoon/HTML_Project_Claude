@@ -10,7 +10,13 @@ export class Player {
     this.isInCombat = false;
     this.stepsSinceLast = 0;
     this._totalDist = 0;
-    this._facing = 0; // radians
+    this._facing = 0;
+
+    // Gathering state
+    this.isGathering = false;
+    this._gatherProgress = 0;
+    this._gatherTarget = null; // ResourceNode
+    this._gatherDuration = 0;
 
     this.group = new THREE.Group();
     this._buildMesh();
@@ -18,7 +24,6 @@ export class Player {
   }
 
   _buildMesh() {
-    // Body — capsule approximated as cylinder + two spheres
     const bodyGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.7, 10);
     const bodyMat = createToonMaterial(0x4477cc);
     const body = new THREE.Mesh(bodyGeo, bodyMat);
@@ -27,7 +32,6 @@ export class Player {
     addOutline(body, 0.06);
     this.group.add(body);
 
-    // Head
     const headGeo = new THREE.SphereGeometry(0.28, 10, 8);
     const headMat = createToonMaterial(0xf5c89a);
     const head = new THREE.Mesh(headGeo, headMat);
@@ -36,7 +40,6 @@ export class Player {
     addOutline(head, 0.06);
     this.group.add(head);
 
-    // Eyes (tiny dark spheres for readability)
     const eyeGeo = new THREE.SphereGeometry(0.055, 6, 4);
     const eyeMat = createToonMaterial(0x111111);
     const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
@@ -46,7 +49,6 @@ export class Player {
     eyeR.position.set(0.1, 1.52, 0.24);
     this.group.add(eyeR);
 
-    // Legs
     const legGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.5, 8);
     const legMat = createToonMaterial(0x22336a);
     const legL = new THREE.Mesh(legGeo, legMat);
@@ -61,11 +63,25 @@ export class Player {
     this.group.position.copy(this.position);
   }
 
-  /**
-   * Called each frame with active keys and delta time.
-   */
   update(keysDown, delta) {
     if (this.isInCombat) return;
+
+    // Gathering — pressing E starts/continues
+    if (this.isGathering) {
+      if (!keysDown.has('KeyE')) {
+        // Released E, cancel gather
+        this.isGathering = false;
+        this._gatherProgress = 0;
+        this._gatherTarget = null;
+        return;
+      }
+      this._gatherProgress += delta;
+      if (this._gatherProgress >= this._gatherDuration) {
+        // Gather complete — handled externally via getGatherResult()
+        return;
+      }
+      return; // Don't move while gathering
+    }
 
     const speed = this.stats.moveSpeed;
     let dx = 0, dz = 0;
@@ -76,7 +92,6 @@ export class Player {
     if (keysDown.has('KeyD') || keysDown.has('ArrowRight')) dx += 1;
 
     if (dx !== 0 && dz !== 0) {
-      // Normalize diagonal
       const inv = 1 / Math.SQRT2;
       dx *= inv;
       dz *= inv;
@@ -90,7 +105,6 @@ export class Player {
       this.position.x += dx * dist;
       this.position.z += dz * dist;
 
-      // Clamp to world boundary
       const half = CONFIG.GROUND_SIZE / 2 - 1;
       this.position.x = Math.max(-half, Math.min(half, this.position.x));
       this.position.z = Math.max(-half, Math.min(half, this.position.z));
@@ -105,6 +119,27 @@ export class Player {
 
     this.group.position.copy(this.position);
   }
+
+  // ── Gathering ──────────────────────────────────────────────────────────────
+  startGathering(resourceNode) {
+    this.isGathering = true;
+    this._gatherTarget = resourceNode;
+    this._gatherProgress = 0;
+    // Dexterity reduces gather time
+    this._gatherDuration = resourceNode.gatherTime / (1 + this.stats.stats.dexterity.level * 0.15);
+  }
+
+  getGatherResult() {
+    if (!this.isGathering || this._gatherProgress < this._gatherDuration) return null;
+    const result = this._gatherTarget.gather();
+    this.isGathering = false;
+    this._gatherProgress = 0;
+    this._gatherTarget = null;
+    return result;
+  }
+
+  get gatherProgress() { return this._gatherProgress; }
+  get gatherDuration() { return this._gatherDuration; }
 
   consumeSteps() {
     const s = this.stepsSinceLast;

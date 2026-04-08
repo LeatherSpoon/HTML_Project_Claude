@@ -80,14 +80,16 @@ export class Enemy {
     });
   }
 
-  update(delta, playerPos) {
+  update(delta, playerPos, skipAggro = false) {
     if (this._state === 'dead' || this._state === 'aggro') return false;
 
     // Check aggro
-    const dist = this.position.distanceTo(playerPos);
-    if (dist < this.aggroRadius) {
-      this._state = 'aggro';
-      return true; // signal aggro triggered
+    if (!skipAggro) {
+      const dist = this.position.distanceTo(playerPos);
+      if (dist < this.aggroRadius) {
+        this._state = 'aggro';
+        return true; // signal aggro triggered
+      }
     }
 
     // Patrol behaviour
