@@ -1,0 +1,167 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #000;
+  overflow: hidden;
+  font-family: 'Courier New', Courier, monospace;
+  color: #e0ffe0;
+}
+
+#game-canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ── HUD overlay ─────────────────────────────────────────────────── */
+#hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Top-left info block */
+#hud-topleft {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+#pp-display,
+#hp-display,
+#steps-display {
+  background: rgba(0, 10, 0, 0.65);
+  border: 1px solid #00cc66;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  color: #aaffcc;
+  white-space: nowrap;
+}
+
+#pp-rate {
+  color: #44ffaa;
+  font-size: 0.78rem;
+}
+
+/* ── Stat Sidebar ─────────────────────────────────────────────────── */
+#stat-sidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 100%;
+  background: rgba(0, 8, 0, 0.75);
+  border-left: 1px solid #00cc66;
+  padding: 10px 8px;
+  overflow-y: auto;
+  pointer-events: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #00cc66 transparent;
+}
+
+.sidebar-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  color: #00cc66;
+  text-align: center;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #00cc6633;
+  padding-bottom: 4px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 2px;
+  border-bottom: 1px solid #003311;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: #99ddbb;
+}
+
+.stat-level {
+  font-size: 0.68rem;
+  color: #55aa77;
+}
+
+.stat-up-btn {
+  background: rgba(0, 80, 30, 0.7);
+  border: 1px solid #00cc66;
+  border-radius: 4px;
+  color: #aaffcc;
+  font-family: 'Courier New', monospace;
+  font-size: 0.68rem;
+  padding: 2px 5px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.stat-up-btn:hover:not(:disabled) {
+  background: rgba(0, 160, 60, 0.7);
+}
+
+.stat-up-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stat-up-btn.flash-fail {
+  background: rgba(180, 0, 0, 0.7);
+  border-color: #ff4444;
+}
+
+/* Offload button */
+.offload-btn {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 5px;
+  background: rgba(0, 40, 20, 0.8);
+  border: 1px solid #00cc66;
+  border-radius: 6px;
+  color: #aaffcc;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: background 0.15s;
+  pointer-events: auto;
+}
+
+.offload-btn.offload-on {
+  background: rgba(0, 150, 60, 0.6);
+  color: #00ff88;
+  border-color: #00ff88;
+}
+
+/* Scrollbar styling */
+#stat-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+#stat-sidebar::-webkit-scrollbar-thumb {
+  background: #00cc66;
+  border-radius: 2px;
+}
