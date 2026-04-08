@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Processing Power</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/combat.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="game-canvas"></canvas>
+
+  <!-- HUD overlay -->
+  <div id="hud">
+    <div id="hud-topleft">
+      <div id="pp-display">PP: 0 <span id="pp-rate">(+1.0/s)</span></div>
+      <div id="hp-display">HP: 100 / 100</div>
+      <div id="steps-display">Steps: 0</div>
+    </div>
+
+    <div id="stat-sidebar">
+      <div class="sidebar-title">STATS</div>
+      <div id="stat-list">
+        <!-- populated by HUD.js -->
+      </div>
+      <div class="sidebar-title" style="margin-top:12px;">OFFLOAD MODE</div>
+      <button id="offload-btn" class="offload-btn">OFF</button>
+    </div>
+  </div>
+
+  <!-- Combat overlay -->
+  <div id="combat-overlay" hidden>
+    <div id="combat-scene">
+      <div id="enemy-panel">
+        <div id="enemy-name">SCRAPPER</div>
+        <div id="enemy-hp-bar-wrap">
+          <div class="hp-label">HP</div>
+          <div class="hp-track"><div id="enemy-hp-fill" class="hp-fill enemy-fill"></div></div>
+          <div id="enemy-hp-text">40 / 40</div>
+        </div>
+        <div id="enemy-sprite"></div>
+      </div>
+
+      <div id="player-combat-panel">
+        <div id="player-combat-name">YOU</div>
+        <div id="player-hp-bar-wrap">
+          <div class="hp-label">HP</div>
+          <div class="hp-track"><div id="player-hp-fill" class="hp-fill player-fill"></div></div>
+          <div id="player-hp-text">100 / 100</div>
+        </div>
+        <div id="player-sprite"></div>
+        <div id="fp-ring-wrap">
+          <svg id="fp-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle id="fp-ring-bg" cx="50" cy="50" r="40" fill="none" stroke="#1a2a2a" stroke-width="8"/>
+            <circle id="fp-ring-fill" cx="50" cy="50" r="40" fill="none" stroke="#00ffcc" stroke-width="8"
+              stroke-dasharray="251.3" stroke-dashoffset="251.3"
+              transform="rotate(90 50 50)" stroke-linecap="round"/>
+          </svg>
+          <div id="fp-text">0 FP</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="combat-log-wrap">
+      <div id="combat-log"></div>
+    </div>
+
+    <div id="combat-actions">
+      <button id="btn-fight" class="action-btn" onclick="window.combatUI.onFight()">FIGHT</button>
+      <button id="btn-skills" class="action-btn" onclick="window.combatUI.onSkills()">SKILLS</button>
+      <button id="btn-items" class="action-btn" onclick="window.combatUI.onItems()">ITEMS</button>
+      <button id="btn-run" class="action-btn" onclick="window.combatUI.onRun()">RUN</button>
+    </div>
+
+    <!-- Skills submenu -->
+    <div id="skills-menu" hidden>
+      <div id="skills-list">
+        <!-- populated by SkillsMenu.js -->
+      </div>
+      <button class="action-btn back-btn" onclick="window.combatUI.closeSkills()">BACK</button>
+    </div>
+
+    <!-- Items submenu -->
+    <div id="items-menu" hidden>
+      <div id="items-list">
+        <div class="no-items">No items.</div>
+      </div>
+      <button class="action-btn back-btn" onclick="window.combatUI.closeItems()">BACK</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
