@@ -5,14 +5,15 @@ import * as THREE from 'three';
  * steps=3 gives a clean two-tone cel look.
  */
 function makeGradientMap(steps = 3) {
-  const colors = new Uint8Array(steps * 3);
+  const colors = new Uint8Array(steps * 4);
   for (let i = 0; i < steps; i++) {
     const v = Math.round((i / (steps - 1)) * 255);
-    colors[i * 3] = v;
-    colors[i * 3 + 1] = v;
-    colors[i * 3 + 2] = v;
+    colors[i * 4] = v;
+    colors[i * 4 + 1] = v;
+    colors[i * 4 + 2] = v;
+    colors[i * 4 + 3] = 255;
   }
-  const tex = new THREE.DataTexture(colors, steps, 1, THREE.RGBFormat);
+  const tex = new THREE.DataTexture(colors, steps, 1, THREE.RGBAFormat);
   tex.needsUpdate = true;
   return tex;
 }
