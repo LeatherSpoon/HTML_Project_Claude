@@ -10,6 +10,10 @@
   color: #e0ffe0;
 }
 
+#combat-overlay[hidden] {
+  display: none !important;
+}
+
 /* ── Scene (top 55%) ─────────────────────────────────────────────── */
 #combat-scene {
   flex: 0 0 55%;
@@ -120,18 +124,29 @@
   border-radius: 50% 50% 0 0;
 }
 
+/* ── Player sprite wrapper (holds sprite + FP ring) ─────────────── */
+#player-sprite-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ── FP Ring ─────────────────────────────────────────────────────── */
 #fp-ring-wrap {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 4px;
+  pointer-events: none;
 }
 
 #fp-ring-svg {
-  width: 72px;
-  height: 72px;
+  width: 130px;
+  height: 130px;
 }
 
 #fp-ring-fill {
@@ -140,6 +155,7 @@
 
 #fp-text {
   position: absolute;
+  bottom: -2px;
   font-size: 0.65rem;
   color: #00ffcc;
   text-align: center;
