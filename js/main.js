@@ -12,11 +12,15 @@ import { DroneSystem } from './systems/DroneSystem.js';
 import { EquipmentSystem } from './systems/EquipmentSystem.js';
 import { HUD } from './ui/HUD.js';
 import { CombatUI } from './ui/CombatUI.js';
+import { TouchInput } from './input/TouchInput.js';
 import { CONFIG } from './config.js';
 
 // ── Bootstrap ────────────────────────────────────────────────────────────────
 
 const canvas = document.getElementById('game-canvas');
+
+// Touch input (no-op on desktop)
+const touchInput = new TouchInput();
 
 // Systems
 const ppSystem       = new PPSystem();
@@ -151,6 +155,9 @@ function togglePanel(panelId) {
   if (!panel.hidden) hud._refreshPanel(panelId);
 }
 
+// Expose for mobile button onclick handlers
+window.togglePanel = togglePanel;
+
 // ── Gathering logic ──────────────────────────────────────────────────────────
 
 let nearestNode = null;
@@ -175,8 +182,8 @@ function handleGathering(delta) {
   }
 
   if (nearestNode) {
-    hud.showInteractHint(`[E] Gather ${nearestNode.materialType}`);
-    if (keysDown.has('KeyE')) {
+    hud.showInteractHint(`[E/ACT] Gather ${nearestNode.materialType}`);
+    if (keysDown.has('KeyE') || touchInput.actionPressed) {
       player.startGathering(nearestNode);
     }
   }
@@ -191,8 +198,8 @@ function gameLoop(now) {
   lastTime = now;
   const delta = Math.min(rawDelta, 0.1);
 
-  // Update player
-  player.update(keysDown, delta);
+  // Update player (pass touch input for mobile movement + action button)
+  player.update(keysDown, delta, touchInput);
 
   // Update PP
   ppSystem.update(delta);
@@ -224,8 +231,8 @@ function gameLoop(now) {
         if (portal.ppRequired > 0 && ppSystem.ppTotal < portal.ppRequired) {
           hud.showInteractHint(`Need ${portal.ppRequired} PP for ${portal.label}`);
         } else {
-          hud.showInteractHint(`[E] Enter ${portal.label}`);
-          if (keysDown.has('KeyE')) {
+          hud.showInteractHint(`[E/ACT] Enter ${portal.label}`);
+          if (keysDown.has('KeyE') || touchInput.actionPressed) {
             switchZone(portal.targetZone);
           }
         }

@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#000000" />
   <title>Processing Power</title>
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/combat.css" />
+  <link rel="stylesheet" href="css/mobile.css" />
   <script type="importmap">
   {
     "imports": {
@@ -130,6 +135,20 @@
       <div id="items-list"></div>
       <button class="action-btn back-btn" onclick="window.combatUI.closeItems()">BACK</button>
     </div>
+  </div>
+
+  <!-- Mobile controls overlay (touch devices only — shown via CSS) -->
+  <div id="mobile-controls">
+    <!-- Virtual joystick -->
+    <div id="joystick-zone">
+      <div id="joystick-base"></div>
+      <div id="joystick-stick"></div>
+    </div>
+    <!-- Action / interact button -->
+    <button id="btn-mobile-action" aria-label="Interact / Gather">
+      <span class="act-label">ACT</span>
+      <span class="act-sub">[E]</span>
+    </button>
   </div>
 
   <script type="module" src="js/main.js"></script>

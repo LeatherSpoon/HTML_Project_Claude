@@ -63,12 +63,14 @@ export class Player {
     this.group.position.copy(this.position);
   }
 
-  update(keysDown, delta) {
+  update(keysDown, delta, touchInput = null) {
     if (this.isInCombat) return;
+
+    const hasE = keysDown.has('KeyE') || (touchInput?.actionPressed ?? false);
 
     // Gathering — pressing E starts/continues
     if (this.isGathering) {
-      if (!keysDown.has('KeyE')) {
+      if (!hasE) {
         // Released E, cancel gather
         this.isGathering = false;
         this._gatherProgress = 0;
@@ -91,7 +93,11 @@ export class Player {
     if (keysDown.has('KeyA') || keysDown.has('ArrowLeft'))  dx -= 1;
     if (keysDown.has('KeyD') || keysDown.has('ArrowRight')) dx += 1;
 
-    if (dx !== 0 && dz !== 0) {
+    // Virtual joystick overrides keyboard movement when active
+    if (touchInput?.isMoving) {
+      dx = touchInput.dx;
+      dz = touchInput.dz;
+    } else if (dx !== 0 && dz !== 0) {
       const inv = 1 / Math.SQRT2;
       dx *= inv;
       dz *= inv;
