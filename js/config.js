@@ -59,4 +59,33 @@ export const CONFIG = {
   // Pedometer shop
   PEDOMETER_PP_BONUS_BASE_COST: 50,   // steps cost
   PEDOMETER_PP_BONUS_AMOUNT: 0.05,    // PP/step increase per purchase
+
+  // Gathering
+  BASE_GATHER_TIME: 2.0,    // seconds
+  GATHER_INTERACT_RADIUS: 2.0,
+
+  // Environments PP unlock thresholds
+  ENV_UNLOCK: {
+    landingSite: 0,
+    mine: 0,
+    verdantMaw: 1000,
+    lagoonCoast: 9000,
+  },
+
+  // Status effects
+  STATUS_EFFECTS: {
+    burn:      { label: 'Burn',      tickDamage: 3, durationTicks: 5 },
+    shock:     { label: 'Shock',     fpSlowPct: 0.5, durationTicks: 4 },
+    corrosion: { label: 'Corrosion', defenseReduction: 3, durationTicks: 6 },
+    poison:    { label: 'Poison',    tickDamage: 2, durationTicks: 8 },
+  },
+
+  // Terrain types
+  TERRAIN: {
+    grass:  { speedMult: 1.0, hpCost: 0 },
+    forest: { speedMult: 0.5, hpCost: 0, minSpeed: 3 },
+    swamp:  { speedMult: 0.6, hpCost: 0.5 },  // HP per second
+    rock:   { speedMult: 0.8, hpCost: 0 },
+    water:  { speedMult: 0.3, hpCost: 1.0 },
+  },
 };

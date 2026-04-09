@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#000000" />
   <title>Processing Power</title>
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/combat.css" />
+  <link rel="stylesheet" href="css/mobile.css" />
   <script type="importmap">
   {
     "imports": {
@@ -20,18 +25,57 @@
   <!-- HUD overlay -->
   <div id="hud">
     <div id="hud-topleft">
+      <div id="zone-label">Landing Site</div>
       <div id="pp-display">PP: 0 <span id="pp-rate">(+1.0/s)</span></div>
       <div id="hp-display">HP: 100 / 100</div>
       <div id="steps-display">Steps: 0</div>
     </div>
 
+    <!-- Interact hint + gather bar -->
+    <div id="interact-hint" hidden>[E] Gather</div>
+    <div id="gather-bar" hidden>
+      <div id="gather-fill"></div>
+      <div id="gather-text">Gathering...</div>
+    </div>
+
+    <!-- Panel toggle buttons (bottom-left) -->
+    <div id="panel-buttons">
+      <button id="btn-toggle-inventory-panel" class="panel-toggle-btn" title="Inventory (I)">INV</button>
+      <button id="btn-toggle-crafting-panel" class="panel-toggle-btn" title="Crafting (C)">CRAFT</button>
+      <button id="btn-toggle-drone-panel" class="panel-toggle-btn" title="Drones (R)">DRONE</button>
+      <button id="btn-toggle-equipment-panel" class="panel-toggle-btn" title="Equipment (L)">EQUIP</button>
+    </div>
+
+    <!-- Stat sidebar (right) -->
     <div id="stat-sidebar">
       <div class="sidebar-title">STATS</div>
-      <div id="stat-list">
-        <!-- populated by HUD.js -->
-      </div>
+      <div id="stat-list"></div>
       <div class="sidebar-title" style="margin-top:12px;">OFFLOAD MODE</div>
       <button id="offload-btn" class="offload-btn">OFF</button>
+    </div>
+
+    <!-- Inventory panel -->
+    <div id="inventory-panel" class="game-panel" hidden>
+      <div class="panel-header">INVENTORY <button class="panel-close" onclick="this.parentElement.parentElement.hidden=true">X</button></div>
+      <div id="inventory-contents" class="panel-body"></div>
+    </div>
+
+    <!-- Crafting panel -->
+    <div id="crafting-panel" class="game-panel" hidden>
+      <div class="panel-header">CRAFTING <button class="panel-close" onclick="this.parentElement.parentElement.hidden=true">X</button></div>
+      <div id="crafting-contents" class="panel-body"></div>
+    </div>
+
+    <!-- Drone panel -->
+    <div id="drone-panel" class="game-panel" hidden>
+      <div class="panel-header">DRONES <button class="panel-close" onclick="this.parentElement.parentElement.hidden=true">X</button></div>
+      <div id="drone-contents" class="panel-body"></div>
+    </div>
+
+    <!-- Equipment panel -->
+    <div id="equipment-panel" class="game-panel" hidden>
+      <div class="panel-header">EQUIPMENT <button class="panel-close" onclick="this.parentElement.parentElement.hidden=true">X</button></div>
+      <div id="equipment-contents" class="panel-body"></div>
     </div>
   </div>
 
@@ -55,6 +99,7 @@
           <div class="hp-track"><div id="player-hp-fill" class="hp-fill player-fill"></div></div>
           <div id="player-hp-text">100 / 100</div>
         </div>
+        <div id="status-effects"></div>
         <div id="player-sprite"></div>
         <div id="fp-ring-wrap">
           <svg id="fp-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -81,19 +126,29 @@
 
     <!-- Skills submenu -->
     <div id="skills-menu" hidden>
-      <div id="skills-list">
-        <!-- populated by SkillsMenu.js -->
-      </div>
+      <div id="skills-list"></div>
       <button class="action-btn back-btn" onclick="window.combatUI.closeSkills()">BACK</button>
     </div>
 
     <!-- Items submenu -->
     <div id="items-menu" hidden>
-      <div id="items-list">
-        <div class="no-items">No items.</div>
-      </div>
+      <div id="items-list"></div>
       <button class="action-btn back-btn" onclick="window.combatUI.closeItems()">BACK</button>
     </div>
+  </div>
+
+  <!-- Mobile controls overlay (touch devices only — shown via CSS) -->
+  <div id="mobile-controls">
+    <!-- Virtual joystick -->
+    <div id="joystick-zone">
+      <div id="joystick-base"></div>
+      <div id="joystick-stick"></div>
+    </div>
+    <!-- Action / interact button -->
+    <button id="btn-mobile-action" aria-label="Interact / Gather">
+      <span class="act-label">ACT</span>
+      <span class="act-sub">[E]</span>
+    </button>
   </div>
 
   <script type="module" src="js/main.js"></script>

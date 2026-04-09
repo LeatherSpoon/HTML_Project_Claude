@@ -1,0 +1,241 @@
+/* ── Mobile / Touch Controls ─────────────────────────────────────────────── */
+
+/* Hidden by default; revealed on coarse-pointer (touch) devices */
+#mobile-controls {
+  display: none;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Prevent unwanted scroll / zoom on the game canvas */
+#game-canvas {
+  touch-action: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Touch devices (any orientation)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (pointer: coarse) {
+
+  #mobile-controls {
+    display: block;
+  }
+
+  /* ── Virtual Joystick ──────────────────────────────────────────────────── */
+  #joystick-zone {
+    position: absolute;
+    bottom: 28px;
+    left: 28px;
+    width: 130px;
+    height: 130px;
+    pointer-events: auto;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #joystick-base {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(0, 255, 204, 0.07);
+    border: 2px solid rgba(0, 255, 204, 0.35);
+  }
+
+  #joystick-stick {
+    position: absolute;
+    width: 54px;
+    height: 54px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%,
+      rgba(0, 255, 204, 0.75) 0%,
+      rgba(0, 160, 100, 0.55) 100%);
+    border: 2px solid #00ffcc;
+    pointer-events: none;
+    box-shadow: 0 0 12px rgba(0, 255, 204, 0.3);
+  }
+
+  /* ── Action Button (E key) ─────────────────────────────────────────────── */
+  #btn-mobile-action {
+    position: absolute;
+    bottom: 52px;
+    right: 36px;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: rgba(0, 100, 50, 0.85);
+    border: 2px solid #00cc66;
+    color: #aaffcc;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    pointer-events: auto;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+    box-shadow: 0 0 14px rgba(0, 204, 102, 0.2);
+    line-height: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+
+  #btn-mobile-action:active,
+  #btn-mobile-action.pressed {
+    background: rgba(0, 170, 75, 0.9);
+    box-shadow: 0 0 20px rgba(0, 255, 150, 0.4);
+  }
+
+  #btn-mobile-action .act-label {
+    font-size: 1.1rem;
+  }
+
+  #btn-mobile-action .act-sub {
+    font-size: 0.6rem;
+    color: #55ffaa;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Panel toggle buttons: move above joystick ─────────────────────────── */
+  #panel-buttons {
+    bottom: 180px;
+    left: 20px;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .panel-toggle-btn {
+    padding: 9px 13px;
+    font-size: 0.74rem;
+    min-width: 58px;
+    text-align: center;
+  }
+
+  /* ── Game panels: full-width bottom-sheet on mobile ───────────────────── */
+  .game-panel {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-height: 52vh !important;
+    border-radius: 10px 10px 0 0 !important;
+    bottom: 0 !important;
+  }
+
+  /* ── Stat sidebar: compact on touch ───────────────────────────────────── */
+  #stat-sidebar {
+    width: 155px;
+    padding: 8px 6px;
+  }
+
+  .sidebar-title  { font-size: 0.66rem; }
+  .stat-label     { font-size: 0.67rem; }
+  .stat-level     { font-size: 0.62rem; }
+  .stat-up-btn    { font-size: 0.62rem; padding: 2px 4px; }
+
+  /* ── Combat action buttons: taller for fat fingers ─────────────────────── */
+  .action-btn {
+    min-height: 52px;
+    font-size: 1.05rem;
+  }
+
+  /* ── Interact hint: larger text ────────────────────────────────────────── */
+  #interact-hint {
+    font-size: 0.95rem;
+    padding: 8px 20px;
+    bottom: 180px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Portrait-specific
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (pointer: coarse) and (orientation: portrait) {
+
+  #joystick-zone {
+    bottom: 32px;
+    left: 24px;
+    width: 140px;
+    height: 140px;
+  }
+
+  #joystick-stick {
+    width: 60px;
+    height: 60px;
+  }
+
+  #btn-mobile-action {
+    bottom: 58px;
+    right: 28px;
+    width: 84px;
+    height: 84px;
+    font-size: 0.88rem;
+  }
+
+  #panel-buttons {
+    bottom: 200px;
+    left: 18px;
+  }
+
+  /* Narrower stat sidebar in portrait so game is still visible */
+  #stat-sidebar {
+    width: 138px;
+  }
+
+  /* HUD top-left: slightly smaller in portrait */
+  #pp-display,
+  #hp-display,
+  #steps-display {
+    font-size: 0.8rem;
+    padding: 4px 9px;
+  }
+
+  #zone-label {
+    font-size: 0.85rem;
+    padding: 4px 10px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Landscape-specific
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (pointer: coarse) and (orientation: landscape) {
+
+  #joystick-zone {
+    bottom: 18px;
+    left: 20px;
+    width: 110px;
+    height: 110px;
+  }
+
+  #joystick-stick {
+    width: 46px;
+    height: 46px;
+  }
+
+  #btn-mobile-action {
+    bottom: 28px;
+    right: 28px;
+    width: 68px;
+    height: 68px;
+    font-size: 0.78rem;
+  }
+
+  #panel-buttons {
+    bottom: 144px;
+    left: 16px;
+  }
+
+  /* In landscape the game panels don't need to be as tall */
+  .game-panel {
+    max-height: 60vh !important;
+  }
+}
