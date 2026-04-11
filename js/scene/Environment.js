@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createToonMaterial, addOutlineToGroup } from './ToonMaterials.js';
+import { createToonMaterial, addOutline, addOutlineToGroup } from './ToonMaterials.js';
 import { CONFIG } from '../config.js';
 
 export class Environment {
@@ -51,8 +51,10 @@ export class Environment {
         { x: -8, z: 5, type: 'timber' },
         { x: -10, z: 2, type: 'timber' },
         { x: 7, z: 6, type: 'timber' },
-        { x: -14, z: -10, type: 'stone' },
-        { x: -12, z: -14, type: 'stone' },
+        // Stone nodes kept clear of the Mine portal at (-13, -13) so
+        // gathering doesn't steal the [E] interact from the portal.
+        { x: -16, z: -9, type: 'stone' },
+        { x: -9, z: -16, type: 'stone' },
         { x: 3, z: 8, type: 'fiber' },
         { x: -3, z: 10, type: 'fiber' },
         { x: 9, z: -6, type: 'fiber' },
@@ -110,12 +112,13 @@ export class Environment {
   _buildLandingSite() {
     this._addGround(0x5a8c3c);
     this._addLandingPad();
+    this._addPathToMountain();
     this._addForest();
     this._addMountain();
     this._addRocks();
 
-    // Portal to Mine (near mountain)
-    this._addPortal(-16, -14, 'mine', 0, 'Mine');
+    // Portal to Mine (at mouth of cave on the mountain's near side)
+    this._addPortal(-13, -13, 'mine', 0, 'Mine');
     // Portal to Verdant Maw (south edge)
     this._addPortal(0, 20, 'verdantMaw', CONFIG.ENV_UNLOCK.verdantMaw, 'Verdant Maw');
     // Portal to Lagoon Coast (east edge)
@@ -149,19 +152,79 @@ export class Environment {
     this.group.add(mark);
   }
 
+  /**
+   * Dirt/stone path running southwest from the landing pad to the mountain
+   * cave entrance at roughly (-13, -13). Creates a long dirt plane plus a
+   * scattering of stone tiles along the route.
+   */
+  _addPathToMountain() {
+    // Path endpoints
+    const endX = -13;
+    const endZ = -13;
+    const len = Math.hypot(endX, endZ); // ≈ 18.38
+    const angle = Math.atan2(endX, endZ); // world-angle for the southwest diagonal
+
+    // Main dirt strip
+    const stripGeo = new THREE.PlaneGeometry(1.6, len);
+    const stripMat = createToonMaterial(0x8a7d6b);
+    const strip = new THREE.Mesh(stripGeo, stripMat);
+    strip.rotation.x = -Math.PI / 2;
+    strip.rotation.z = -angle; // align plane's +Y axis with the path direction
+    strip.position.set(endX / 2, 0.02, endZ / 2);
+    strip.receiveShadow = true;
+    this.group.add(strip);
+
+    // Stepping stones scattered along the path (reproducible jitter)
+    const tileMat = createToonMaterial(0x9a9a9a);
+    for (let i = 1; i <= 8; i++) {
+      const t = i / 9;
+      const jx = (Math.sin(i * 2.7) * 0.22);
+      const jz = (Math.cos(i * 1.9) * 0.22);
+      const tileGeo = new THREE.BoxGeometry(0.45, 0.08, 0.45);
+      const tile = new THREE.Mesh(tileGeo, tileMat);
+      tile.position.set(endX * t + jx, 0.05, endZ * t + jz);
+      tile.rotation.y = i * 0.4;
+      tile.receiveShadow = true;
+      tile.castShadow = true;
+      this.group.add(tile);
+    }
+  }
+
   _addForest() {
     const r = CONFIG.FOREST_RADIUS;
     const count = CONFIG.TREE_COUNT;
+
+    // Carve a narrow gap in the forest aligned with the path that runs
+    // southwest from the landing pad to the mountain cave. In this scene
+    // (x, z) map to angle = atan2(z, x); southwest is angle = -3π/4.
+    const pathAngle = -3 * Math.PI / 4;
+    const gapHalfWidth = Math.PI * 0.12;
+
     for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2;
-      if (angle > Math.PI * 0.05 && angle < Math.PI * 0.85) continue;
+      const angle = (i / count) * Math.PI * 2 - Math.PI; // [-π, π)
+      // angular distance to path direction, wrapped
+      let d = Math.abs(angle - pathAngle);
+      if (d > Math.PI) d = Math.PI * 2 - d;
+      if (d < gapHalfWidth) continue;
+
       const x = Math.cos(angle) * (r + Math.random() * 3 - 1.5);
       const z = Math.sin(angle) * (r + Math.random() * 3 - 1.5);
       this._addTree(x, z);
     }
-    for (let i = 0; i < 10; i++) {
-      const x = -8 + Math.random() * 10 - 5;
-      const z = -8 + Math.random() * 10 - 5;
+
+    // Scattered inner trees, but avoid anything sitting on top of the
+    // pad or the path line from (0,0) to (-13,-13).
+    const pathDX = -13, pathDZ = -13;
+    const pathLenSq = pathDX * pathDX + pathDZ * pathDZ;
+    for (let i = 0; i < 14; i++) {
+      const x = -8 + Math.random() * 16;
+      const z = -8 + Math.random() * 16;
+      // Keep clear of the landing pad
+      if (Math.hypot(x, z) < CONFIG.LANDING_PAD_RADIUS + 1.2) continue;
+      // Project (x,z) onto the path line segment and skip if too close
+      const t = Math.max(0, Math.min(1, (x * pathDX + z * pathDZ) / pathLenSq));
+      const px = pathDX * t, pz = pathDZ * t;
+      if (Math.hypot(x - px, z - pz) < 1.3) continue;
       this._addTree(x, z);
     }
   }
@@ -222,6 +285,82 @@ export class Environment {
     group.position.set(x, 0, z);
     addOutlineToGroup(group, 0.03);
     this.group.add(group);
+
+    // Cave mouth: a dark tunnel opening boring into the base of the
+    // mountain, facing the landing pad (northeast). Built as a separate
+    // group in world space so the dark-interior basic material is not
+    // wrapped with a cel outline.
+    this._addCaveEntrance(x, z);
+  }
+
+  /**
+   * Dark cave entrance at the base of the mountain, facing the landing pad.
+   * Consists of a hollow stone arch (open-ended cylinder) with a pitch-dark
+   * interior disk and two flanking stone pillars.
+   */
+  _addCaveEntrance(mountainX, mountainZ) {
+    // Direction from the mountain center toward the origin (pad), normalized.
+    const dx = -mountainX;
+    const dz = -mountainZ;
+    const len = Math.hypot(dx, dz) || 1;
+    const nx = dx / len;
+    const nz = dz / len;
+
+    // Place the cave mouth just outside the hill base (hill radius ≈ 9).
+    const mouthR = 6.8;
+    const cx = mountainX + nx * mouthR;
+    const cz = mountainZ + nz * mouthR;
+
+    // Orient so the cylinder's length axis points toward the pad.
+    const yaw = Math.atan2(nx, nz);
+
+    const caveGroup = new THREE.Group();
+
+    // Hollow stone archway (open-ended cylinder rotated on its side)
+    const archGeo = new THREE.CylinderGeometry(1.4, 1.4, 3.2, 14, 1, true);
+    const archMat = createToonMaterial(0x4a4a55);
+    archMat.side = THREE.DoubleSide;
+    const arch = new THREE.Mesh(archGeo, archMat);
+    arch.rotation.z = Math.PI / 2; // lay the cylinder on its side (axis → X)
+    arch.position.y = 1.4;
+    arch.castShadow = true;
+    arch.receiveShadow = true;
+    caveGroup.add(arch);
+    addOutline(arch, 0.03);
+
+    // Pitch-dark interior disk sealing the back of the tunnel (no outline).
+    const darkGeo = new THREE.CircleGeometry(1.28, 18);
+    const darkMat = new THREE.MeshBasicMaterial({
+      color: 0x050505,
+      side: THREE.DoubleSide,
+    });
+    const dark = new THREE.Mesh(darkGeo, darkMat);
+    dark.rotation.y = Math.PI / 2;
+    dark.position.set(-1.2, 1.4, 0); // set back into the mountain (local -X)
+    caveGroup.add(dark);
+
+    // Flanking stone pillars
+    const pillarMat = createToonMaterial(0x6d7d88);
+    for (const side of [-1, 1]) {
+      const pillarGeo = new THREE.BoxGeometry(0.55, 2.4, 0.55);
+      const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+      pillar.position.set(0.15, 1.2, side * 1.75);
+      pillar.castShadow = true;
+      caveGroup.add(pillar);
+      addOutline(pillar, 0.04);
+    }
+
+    // Lintel across the top
+    const lintelGeo = new THREE.BoxGeometry(0.9, 0.35, 3.8);
+    const lintel = new THREE.Mesh(lintelGeo, pillarMat);
+    lintel.position.set(0.15, 2.55, 0);
+    lintel.castShadow = true;
+    caveGroup.add(lintel);
+    addOutline(lintel, 0.04);
+
+    caveGroup.position.set(cx, 0, cz);
+    caveGroup.rotation.y = yaw;
+    this.group.add(caveGroup);
   }
 
   _addRocks() {
