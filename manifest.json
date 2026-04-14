@@ -1,0 +1,10 @@
+{
+  "name": "Processing Power",
+  "short_name": "ProcPower",
+  "description": "A sci-fi exploration game. Gather resources, upgrade your stats, and explore alien worlds.",
+  "start_url": "./",
+  "display": "fullscreen",
+  "background_color": "#000000",
+  "theme_color": "#00ffcc",
+  "icons": []
+}

@@ -7,6 +7,10 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#000000" />
+  <meta property="og:title" content="Processing Power" />
+  <meta property="og:description" content="A sci-fi exploration game. Gather resources, upgrade your stats, and explore alien worlds." />
+  <meta property="og:type" content="website" />
+  <link rel="manifest" href="manifest.json" />
   <title>Processing Power</title>
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/combat.css" />
@@ -28,6 +32,7 @@
       <div id="zone-label">Landing Site</div>
       <div id="pp-display">PP: 0 <span id="pp-rate">(+1.0/s)</span></div>
       <div id="hp-display">HP: 100 / 100</div>
+      <div id="energy-display">EN: 100 / 100</div>
       <div id="steps-display">Steps: 0</div>
     </div>
 
@@ -44,6 +49,7 @@
       <button id="btn-toggle-crafting-panel" class="panel-toggle-btn" title="Crafting (C)">CRAFT</button>
       <button id="btn-toggle-drone-panel" class="panel-toggle-btn" title="Drones (R)">DRONE</button>
       <button id="btn-toggle-equipment-panel" class="panel-toggle-btn" title="Equipment (L)">EQUIP</button>
+      <button id="btn-toggle-step-shop-panel" class="panel-toggle-btn" title="Step Shop (P)">STEPS</button>
     </div>
 
     <!-- Stat sidebar (right) -->
@@ -76,6 +82,12 @@
     <div id="equipment-panel" class="game-panel" hidden>
       <div class="panel-header">EQUIPMENT <button class="panel-close" onclick="this.parentElement.parentElement.hidden=true">X</button></div>
       <div id="equipment-contents" class="panel-body"></div>
+    </div>
+
+    <!-- Step Shop panel -->
+    <div id="step-shop-panel" class="game-panel" hidden>
+      <div class="panel-header">STEP SHOP <button class="panel-close" onclick="this.parentElement.parentElement.hidden=true">X</button></div>
+      <div id="step-shop-contents" class="panel-body"></div>
     </div>
   </div>
 

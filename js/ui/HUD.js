@@ -1,5 +1,5 @@
 export class HUD {
-  constructor(statsSystem, ppSystem, pedometerSystem, inventorySystem, craftingSystem, droneSystem, equipmentSystem) {
+  constructor(statsSystem, ppSystem, pedometerSystem, inventorySystem, craftingSystem, droneSystem, equipmentSystem, energySystem) {
     this.stats = statsSystem;
     this.pp = ppSystem;
     this.pedometer = pedometerSystem;
@@ -7,10 +7,12 @@ export class HUD {
     this.crafting = craftingSystem;
     this.drones = droneSystem;
     this.equipment = equipmentSystem;
+    this.energy = energySystem;
 
     this.ppDisplay = document.getElementById('pp-display');
     this.ppRate = document.getElementById('pp-rate');
     this.hpDisplay = document.getElementById('hp-display');
+    this.energyDisplay = document.getElementById('energy-display');
     this.stepsDisplay = document.getElementById('steps-display');
     this.statList = document.getElementById('stat-list');
     this.offloadBtn = document.getElementById('offload-btn');
@@ -84,7 +86,7 @@ export class HUD {
 
   _wirePanelToggles() {
     // Toggle panels via buttons in HUD
-    const panels = ['inventory-panel', 'crafting-panel', 'drone-panel', 'equipment-panel'];
+    const panels = ['inventory-panel', 'crafting-panel', 'drone-panel', 'equipment-panel', 'step-shop-panel'];
     for (const panelId of panels) {
       const btn = document.getElementById(`btn-toggle-${panelId}`);
       const panel = document.getElementById(panelId);
@@ -110,6 +112,7 @@ export class HUD {
       case 'crafting-panel': this._refreshCrafting(); break;
       case 'drone-panel': this._refreshDrones(); break;
       case 'equipment-panel': this._refreshEquipment(); break;
+      case 'step-shop-panel': this._refreshStepShop(); break;
     }
   }
 
@@ -283,6 +286,36 @@ export class HUD {
     }
   }
 
+  // ── Step Shop Panel ────────────────────────────────────────────────────────
+  _refreshStepShop() {
+    const el = document.getElementById('step-shop-contents');
+    if (!el) return;
+    el.innerHTML = '';
+
+    const bal = document.createElement('div');
+    bal.className = 'inv-row';
+    bal.textContent = `Steps: ${this.pedometer.totalSteps.toLocaleString()}`;
+    el.appendChild(bal);
+
+    const rate = document.createElement('div');
+    rate.className = 'inv-row';
+    rate.textContent = `PP/step: ${this.pedometer.ppBonusPerStep.toFixed(3)}`;
+    el.appendChild(rate);
+
+    const costInfo = document.createElement('div');
+    costInfo.className = 'inv-row';
+    costInfo.textContent = `Next upgrade: ${this.pedometer.nextBonusCost} steps`;
+    el.appendChild(costInfo);
+
+    const btn = document.createElement('button');
+    btn.className = 'stat-up-btn';
+    btn.style.marginTop = '8px';
+    btn.textContent = `Buy +0.05 PP/step`;
+    btn.disabled = !this.pedometer.canBuyPPBonus();
+    btn.onclick = () => { this.pedometer.buyPPBonus(); this._refreshStepShop(); };
+    el.appendChild(btn);
+  }
+
   // ── Gather progress ────────────────────────────────────────────────────────
   showGatherProgress(progress, total) {
     if (this.gatherBar) {
@@ -323,6 +356,10 @@ export class HUD {
     this.ppRate.textContent = `(+${rate}/s)`;
 
     this.hpDisplay.textContent = `HP: ${Math.ceil(this.stats.currentHP)} / ${this.stats.maxHP}`;
+    if (this.energyDisplay && this.energy) {
+      this.energyDisplay.textContent = `EN: ${this.energy.displayValue} / ${this.energy.displayMax}`;
+      this.energyDisplay.classList.toggle('energy-low', this.energy.currentEnergy < 20);
+    }
     this.stepsDisplay.textContent = `Steps: ${this.pedometer.totalSteps.toLocaleString()}`;
 
     // Refresh stat levels
@@ -342,5 +379,7 @@ export class HUD {
     if (invPanel && !invPanel.hidden) this._refreshInventory();
     const dronePanel = document.getElementById('drone-panel');
     if (dronePanel && !dronePanel.hidden) this._refreshDrones();
+    const stepShopPanel = document.getElementById('step-shop-panel');
+    if (stepShopPanel && !stepShopPanel.hidden) this._refreshStepShop();
   }
 }

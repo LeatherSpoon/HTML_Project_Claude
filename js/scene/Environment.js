@@ -31,6 +31,7 @@ export class Environment {
   }
 
   getPortals() { return this._zonePortals; }
+  getCurrentZoneId() { return this.currentZone; }
 
   getZoneLabel() {
     const labels = {
@@ -111,6 +112,7 @@ export class Environment {
   // ── Landing Site ───────────────────────────────────────────────────────────
   _buildLandingSite() {
     this._addGround(0x5a8c3c);
+    this._addGrid();
     this._addLandingPad();
     this._addPathToMountain();
     this._addForest();
@@ -132,6 +134,17 @@ export class Environment {
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     this.group.add(ground);
+  }
+
+  _addGrid() {
+    const grid = new THREE.GridHelper(
+      CONFIG.GRID_SIZE, CONFIG.GRID_DIVISIONS,
+      CONFIG.GRID_COLOR, CONFIG.GRID_COLOR
+    );
+    grid.position.y = 0.01;
+    grid.material.transparent = true;
+    grid.material.opacity = 0.25;
+    this.group.add(grid);
   }
 
   _addLandingPad() {
@@ -414,6 +427,7 @@ export class Environment {
     this._zonePortals.push({
       position: new THREE.Vector3(x, 0, z),
       targetZone,
+      worldSpaceId: targetZone,
       ppRequired,
       label,
       mesh: group,
@@ -423,6 +437,7 @@ export class Environment {
   // ── Mine zone ──────────────────────────────────────────────────────────────
   _buildMine() {
     this._addGround(0x3a3530);
+    this._addGrid();
 
     // Cave walls
     for (let i = 0; i < 12; i++) {
@@ -458,6 +473,7 @@ export class Environment {
   // ── Verdant Maw zone ──────────────────────────────────────────────────────
   _buildVerdantMaw() {
     this._addGround(0x2a5a1a);
+    this._addGrid();
 
     // Dense jungle canopy
     for (let i = 0; i < 30; i++) {
@@ -508,6 +524,7 @@ export class Environment {
   // ── Lagoon Coast zone ──────────────────────────────────────────────────────
   _buildLagoonCoast() {
     this._addGround(0xc2b280); // sand
+    this._addGrid();
 
     // Water areas
     for (let i = 0; i < 6; i++) {

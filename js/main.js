@@ -14,6 +14,7 @@ import { HUD } from './ui/HUD.js';
 import { CombatUI } from './ui/CombatUI.js';
 import { TouchInput } from './input/TouchInput.js';
 import { CONFIG } from './config.js';
+import { EnergySystem } from './systems/EnergySystem.js';
 
 // ── Bootstrap ────────────────────────────────────────────────────────────────
 
@@ -23,13 +24,14 @@ const canvas = document.getElementById('game-canvas');
 const touchInput = new TouchInput();
 
 // Systems
-const ppSystem       = new PPSystem();
-const statsSystem    = new StatsSystem();
+const ppSystem        = new PPSystem();
+const statsSystem     = new StatsSystem();
 const inventorySystem = new InventorySystem();
-const combatSystem   = new CombatSystem(statsSystem, ppSystem, inventorySystem);
-const pedometer      = new PedometerSystem(ppSystem);
-const craftingSystem = new CraftingSystem(inventorySystem, statsSystem);
-const droneSystem    = new DroneSystem(inventorySystem, ppSystem);
+const energySystem    = new EnergySystem();
+const combatSystem    = new CombatSystem(statsSystem, ppSystem, inventorySystem, energySystem);
+const pedometer       = new PedometerSystem(ppSystem);
+const craftingSystem  = new CraftingSystem(inventorySystem, statsSystem);
+const droneSystem     = new DroneSystem(inventorySystem, ppSystem);
 const equipmentSystem = new EquipmentSystem(statsSystem);
 
 // Wire offload EXP callback
@@ -54,7 +56,7 @@ const sceneManager = new SceneManager(canvas);
 const env = new Environment(sceneManager.scene);
 
 // Entities
-const player = new Player(sceneManager.scene, statsSystem);
+const player = new Player(sceneManager.scene, statsSystem, energySystem);
 
 const entityManager = new EntityManager(sceneManager.scene, (enemy) => {
   player.isInCombat = true;
@@ -63,12 +65,13 @@ const entityManager = new EntityManager(sceneManager.scene, (enemy) => {
 });
 
 // Spawn entities for current zone
-entityManager.spawnForZone(env.getEnemySpawns(), env.getResourceNodeSpawns());
+entityManager.spawnForZone(env.getEnemySpawns(), env.getResourceNodeSpawns(), env.getCurrentZoneId());
 
 // UI
 const hud = new HUD(
   statsSystem, ppSystem, pedometer,
-  inventorySystem, craftingSystem, droneSystem, equipmentSystem
+  inventorySystem, craftingSystem, droneSystem, equipmentSystem,
+  energySystem
 );
 const combatUI = new CombatUI(
   combatSystem, statsSystem, entityManager, player, inventorySystem
@@ -90,8 +93,9 @@ function switchZone(zoneName) {
   player.teleportTo(0, 0);
 
   // Respawn entities for new zone
-  entityManager.spawnForZone(env.getEnemySpawns(), env.getResourceNodeSpawns());
+  entityManager.spawnForZone(env.getEnemySpawns(), env.getResourceNodeSpawns(), env.getCurrentZoneId());
 
+  combatSystem.setWorldSpace(zoneName);
   hud.setZoneLabel(env.getZoneLabel());
 }
 
@@ -128,6 +132,7 @@ document.addEventListener('keydown', e => {
   if (e.code === 'KeyC' && !player.isInCombat) togglePanel('crafting-panel');
   if (e.code === 'KeyR' && !player.isInCombat) togglePanel('drone-panel');
   if (e.code === 'KeyL') togglePanel('equipment-panel');
+  if (e.code === 'KeyP') togglePanel('step-shop-panel');
 });
 
 document.addEventListener('keyup', e => {
@@ -141,8 +146,16 @@ document.addEventListener('click', e => {
 });
 document.body.tabIndex = -1;
 
+function checkLandingPadRestore(delta) {
+  if (env.currentZone !== 'landingSite') return;
+  // player.position.length() = distance from origin (the landing pad center)
+  if (player.position.length() < CONFIG.ENERGY_LANDING_PAD_RADIUS) {
+    energySystem.restoreOverTime(delta);
+  }
+}
+
 function togglePanel(panelId) {
-  const panels = ['inventory-panel', 'crafting-panel', 'drone-panel', 'equipment-panel'];
+  const panels = ['inventory-panel', 'crafting-panel', 'drone-panel', 'equipment-panel', 'step-shop-panel'];
   const panel = document.getElementById(panelId);
   if (!panel) return;
   const wasHidden = panel.hidden;
@@ -214,6 +227,9 @@ function gameLoop(now) {
   // Update drone gathering
   droneSystem.update(delta);
 
+  // Restore energy near landing pad
+  checkLandingPadRestore(delta);
+
   // Update crafting progress
   craftingSystem.update(delta);
 
@@ -262,4 +278,4 @@ function gameLoop(now) {
 sceneManager.renderer.setAnimationLoop(gameLoop);
 
 console.log('%c⚡ Processing Power — ready', 'color:#00ffcc;font-size:1rem;');
-console.log('WASD/Arrows: move | E: interact/gather | I: inventory | C: craft | R: drones | L: equipment');
+console.log('WASD/Arrows: move | E: interact/gather | I: inventory | C: craft | R: drones | L: equipment | P: step shop');

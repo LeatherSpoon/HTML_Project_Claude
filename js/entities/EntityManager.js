@@ -15,8 +15,11 @@ export class EntityManager {
 
   /**
    * Populate enemies and resource nodes from environment zone data.
+   * @param {Array} enemySpawns - Array of {x, z} spawn positions
+   * @param {Array} nodeSpawns  - Array of {x, z, type} spawn data
+   * @param {string} worldSpaceId - Zone identifier for stable entity IDs
    */
-  spawnForZone(enemySpawns, nodeSpawns) {
+  spawnForZone(enemySpawns, nodeSpawns, worldSpaceId = 'unknown') {
     // Clear existing
     for (const e of this.enemies) {
       if (e.group.parent) this.scene.remove(e.group);
@@ -27,16 +30,19 @@ export class EntityManager {
     this.enemies = [];
     this.resourceNodes = [];
     this._gracePeriod = 3;
+    this._currentWorldSpaceId = worldSpaceId;
 
-    // Spawn enemies
-    for (const s of enemySpawns) {
-      const enemy = new Enemy(this.scene, s.x, s.z);
+    // Spawn enemies with stable zone-scoped IDs
+    for (let i = 0; i < enemySpawns.length; i++) {
+      const s = enemySpawns[i];
+      const enemy = new Enemy(this.scene, s.x, s.z, worldSpaceId, i);
       this.enemies.push(enemy);
     }
 
-    // Spawn resource nodes
-    for (const s of nodeSpawns) {
-      const node = new ResourceNode(this.scene, s.x, s.z, s.type);
+    // Spawn resource nodes with stable zone-scoped IDs
+    for (let i = 0; i < nodeSpawns.length; i++) {
+      const s = nodeSpawns[i];
+      const node = new ResourceNode(this.scene, s.x, s.z, s.type, worldSpaceId, i);
       this.resourceNodes.push(node);
     }
   }
@@ -76,7 +82,11 @@ export class EntityManager {
         // Respawn at a dead enemy's spawn position
         const dead = this.enemies.find(e => e._state === 'dead');
         if (dead) {
-          const enemy = new Enemy(this.scene, dead.spawnPos.x, dead.spawnPos.z);
+          const respawnIndex = this.enemies.length;
+          const enemy = new Enemy(
+            this.scene, dead.spawnPos.x, dead.spawnPos.z,
+            dead.worldSpaceId, respawnIndex
+          );
           this.enemies = this.enemies.filter(e => e._state !== 'dead');
           this.enemies.push(enemy);
         }

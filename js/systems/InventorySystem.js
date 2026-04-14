@@ -1,10 +1,11 @@
 import { CONFIG } from '../config.js';
 
 const CONSUMABLE_DEFS = {
-  ration:    { label: 'Ration',     heal: 20, cures: null },
-  firstAid:  { label: 'First Aid',  heal: 60, cures: null },
-  repairKit: { label: 'Repair Kit', heal: 100, cures: null },
-  antidote:  { label: 'Antidote',   heal: 0,  cures: 'poison' },
+  ration:     { label: 'Ration',      heal: 20,  cures: null,     energy: CONFIG.ENERGY_RESTORE_RATION },
+  firstAid:   { label: 'First Aid',   heal: 60,  cures: null },
+  repairKit:  { label: 'Repair Kit',  heal: 100, cures: null },
+  antidote:   { label: 'Antidote',    heal: 0,   cures: 'poison' },
+  energyCell: { label: 'Energy Cell', heal: 0,   cures: null,     energy: CONFIG.ENERGY_RESTORE_CELL },
 };
 
 const MATERIAL_NAMES = [
@@ -57,14 +58,14 @@ export class InventorySystem {
     }
   }
 
-  useConsumable(key, statsSystem) {
+  useConsumable(key, statsSystem, energySystem = null) {
     if (!this.consumables[key] || this.consumables[key] <= 0) return null;
     const def = CONSUMABLE_DEFS[key];
     if (!def) return null;
 
     this.consumables[key]--;
 
-    const result = { label: def.label, healed: 0, cured: null };
+    const result = { label: def.label, healed: 0, cured: null, energyRestored: 0 };
     if (def.heal > 0) {
       const before = statsSystem.currentHP;
       statsSystem.heal(def.heal);
@@ -72,6 +73,10 @@ export class InventorySystem {
     }
     if (def.cures) {
       result.cured = def.cures;
+    }
+    if (def.energy > 0 && energySystem) {
+      energySystem.restore(def.energy);
+      result.energyRestored = def.energy;
     }
     return result;
   }
