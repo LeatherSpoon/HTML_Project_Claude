@@ -40,6 +40,8 @@ export class SceneManager {
     sun.shadow.camera.right = 40;
     sun.shadow.camera.top = 40;
     sun.shadow.camera.bottom = -40;
+    sun.shadow.bias = -0.001;
+    sun.shadow.normalBias = 0.02;
     this.scene.add(sun);
 
     // Fill light from opposite side

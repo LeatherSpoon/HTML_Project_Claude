@@ -2,11 +2,10 @@ import * as THREE from 'three';
 import { createToonMaterial, addOutline } from '../scene/ToonMaterials.js';
 import { CONFIG } from '../config.js';
 
-let enemyIdCounter = 0;
-
 export class Enemy {
-  constructor(scene, x = 6, z = 4) {
-    this.id = ++enemyIdCounter;
+  constructor(scene, x = 6, z = 4, worldSpaceId = 'unknown', spawnIndex = 0) {
+    this.id = `${worldSpaceId}_enemy_${spawnIndex}`;
+    this.worldSpaceId = worldSpaceId;
     this.scene = scene;
     this.position = new THREE.Vector3(x, 0, z);
     this.spawnPos = new THREE.Vector3(x, 0, z);

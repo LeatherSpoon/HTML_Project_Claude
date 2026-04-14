@@ -28,8 +28,8 @@ export class PPSystem {
     }
   }
 
-  addStepPP(steps) {
-    this.ppTotal += steps * CONFIG.PP_PER_STEP;
+  addStepPP(steps, rate = CONFIG.PP_PER_STEP) {
+    this.ppTotal += steps * rate;
   }
 
   /**

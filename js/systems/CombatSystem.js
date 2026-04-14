@@ -1,15 +1,18 @@
 import { CONFIG } from '../config.js';
+import { WorldRegistry } from './WorldRegistry.js';
 
 export class CombatSystem {
-  constructor(statsSystem, ppSystem, inventorySystem) {
+  constructor(statsSystem, ppSystem, inventorySystem, energySystem = null) {
     this.stats = statsSystem;
     this.pp = ppSystem;
     this.inventory = inventorySystem;
+    this.energy = energySystem;
 
     this.active = false;
     this.enemy = null;
     this._enemyInterval = null;
     this._fpInterval = null;
+    this.worldSpaceId = 'landingSite';
 
     // Status effects on player: { type, remainingTicks }
     this.playerEffects = [];
@@ -20,6 +23,10 @@ export class CombatSystem {
     this.onHPUpdate = null;  // fn(playerHP, playerMaxHP, enemyHP, enemyMaxHP)
     this.onCombatEnd = null; // fn(won, fled)
     this.onStatusUpdate = null; // fn(playerEffects)
+  }
+
+  setWorldSpace(id) {
+    this.worldSpaceId = id;
   }
 
   startCombat(enemy) {
@@ -76,6 +83,11 @@ export class CombatSystem {
     if (!def) return;
     // Don't stack same type
     if (this.playerEffects.find(e => e.type === type)) return;
+    // Check world space restrictions
+    if (!WorldRegistry.isStatusAllowed(type, this.worldSpaceId)) {
+      this._log(`${def.label} fizzles in this environment!`);
+      return;
+    }
     this.playerEffects.push({ type, remainingTicks: def.durationTicks });
     this._log(`You are afflicted with ${def.label}!`);
     if (this.onStatusUpdate) this.onStatusUpdate(this.playerEffects);
@@ -153,13 +165,16 @@ export class CombatSystem {
 
   useItem(itemKey) {
     if (!this.active || !this.inventory) return;
-    const result = this.inventory.useConsumable(itemKey, this.stats);
+    const result = this.inventory.useConsumable(itemKey, this.stats, this.energy);
     if (!result) {
       this._log('No item to use!');
       return;
     }
     if (result.healed > 0) {
       this._log(`Used ${result.label}! Healed ${result.healed} HP.`);
+    }
+    if (result.energyRestored > 0) {
+      this._log(`${result.label} restored ${result.energyRestored} EN.`);
     }
     if (result.cured) {
       this.removeStatus(result.cured);

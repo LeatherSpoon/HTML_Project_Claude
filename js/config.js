@@ -88,4 +88,29 @@ export const CONFIG = {
     rock:   { speedMult: 0.8, hpCost: 0 },
     water:  { speedMult: 0.3, hpCost: 1.0 },
   },
+
+  // Energy system
+  ENERGY_MAX: 100,
+  ENERGY_DRAIN_GATHER: 0.1,         // per gather completion
+  ENERGY_RESTORE_RATION: 20,
+  ENERGY_RESTORE_CELL: 50,
+  ENERGY_LANDING_PAD_RESTORE_RATE: 10,  // per second near landing pad
+  ENERGY_LANDING_PAD_RADIUS: 3.5,
+
+  // World spaces
+  WORLD_SPACES: {
+    landingSite: { id: 'landingSite', label: 'Landing Site', type: 'overworld', statusConditions: [] },
+    mine:        { id: 'mine',        label: 'The Mine',     type: 'interior',  statusConditions: ['dark'] },
+    verdantMaw:  { id: 'verdantMaw',  label: 'Verdant Maw',  type: 'interior',  statusConditions: [] },
+    lagoonCoast: { id: 'lagoonCoast', label: 'Lagoon Coast', type: 'overworld', statusConditions: ['wet'] },
+  },
+  STATUS_BLOCKED_BY_CONDITION: {
+    wet:  ['burn'],
+    dark: [],
+  },
+
+  // Visual grid
+  GRID_SIZE: 80,
+  GRID_DIVISIONS: 40,      // 2-unit cells
+  GRID_COLOR: 0x224422,    // subtle dark green
 };

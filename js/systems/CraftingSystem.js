@@ -71,6 +71,14 @@ const RECIPES = {
     baseTime: 6,
     minCraftingLevel: 1,
   },
+  energyCell: {
+    label: 'Energy Cell',
+    type: 'consumable',
+    key: 'energyCell',
+    materials: { quartz: 2, copper: 1, carbon: 1 },
+    baseTime: 6,
+    minCraftingLevel: 2,
+  },
 };
 
 export class CraftingSystem {

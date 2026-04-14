@@ -12,11 +12,10 @@ const NODE_VISUALS = {
   carbon:  { color: 0x333333, shape: 'rock',    height: 0.45 },
 };
 
-let nodeIdCounter = 0;
-
 export class ResourceNode {
-  constructor(scene, x, z, materialType) {
-    this.id = ++nodeIdCounter;
+  constructor(scene, x, z, materialType, worldSpaceId = 'unknown', spawnIndex = 0) {
+    this.id = `${worldSpaceId}_node_${spawnIndex}`;
+    this.worldSpaceId = worldSpaceId;
     this.scene = scene;
     this.position = new THREE.Vector3(x, 0, z);
     this.materialType = materialType;

@@ -3,8 +3,9 @@ import { createToonMaterial, addOutline } from '../scene/ToonMaterials.js';
 import { CONFIG } from '../config.js';
 
 export class Player {
-  constructor(scene, statsSystem) {
+  constructor(scene, statsSystem, energySystem = null) {
     this.stats = statsSystem;
+    this.energy = energySystem;
     this.scene = scene;
     this.position = new THREE.Vector3(0, 0, 0);
     this.isInCombat = false;
@@ -141,6 +142,9 @@ export class Player {
     this.isGathering = false;
     this._gatherProgress = 0;
     this._gatherTarget = null;
+    if (result && this.energy) {
+      this.energy.drain(CONFIG.ENERGY_DRAIN_GATHER);
+    }
     return result;
   }
 

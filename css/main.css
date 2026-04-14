@@ -53,6 +53,7 @@ body {
 
 #pp-display,
 #hp-display,
+#energy-display,
 #steps-display {
   background: rgba(0, 10, 0, 0.65);
   border: 1px solid #00cc66;
@@ -67,6 +68,11 @@ body {
 #pp-rate {
   color: #44ffaa;
   font-size: 0.78rem;
+}
+
+#energy-display.energy-low {
+  border-color: #ff6600;
+  color: #ffaa44;
 }
 
 /* ── Interact hint ───────────────────────────────────────────────── */
